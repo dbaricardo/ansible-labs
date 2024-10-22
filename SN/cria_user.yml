@@ -1,0 +1,37 @@
+---
+- name: Criar usuário operador no ServiceNow
+  hosts: localhost
+  gather_facts: no
+  vars:
+    sn_instance: "https://seu-dominio.servicenow.com"   # URL da instância do ServiceNow
+    sn_user: "seu_usuario"  # Usuário com permissões para criar usuários
+    sn_password: "sua_senha"  # Senha do usuário
+    sn_table: "sys_user"  # Tabela de usuários
+    new_user_name: "João Silva"  # Nome do novo usuário
+    new_user_username: "joao.silva"  # Nome de usuário do novo usuário
+    new_user_email: "joao.silva@dominio.com"  # E-mail do novo usuário
+    new_user_role: "operator"  # Role para o operador (ajustar conforme necessário)
+
+  tasks:
+    - name: Criar usuário no ServiceNow
+      uri:
+        url: "{{ sn_instance }}/api/now/table/{{ sn_table }}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Basic {{ sn_user | b64encode }}:{{ sn_password | b64encode }}"
+        body:
+          {
+            "first_name": "João",
+            "last_name": "Silva",
+            "user_name": "{{ new_user_username }}",
+            "email": "{{ new_user_email }}",
+            "roles": ["{{ new_user_role }}"]
+          }
+        body_format: json
+        return_content: yes
+      register: result
+
+    - name: Exibir resultado da criação
+      debug:
+        var: result
