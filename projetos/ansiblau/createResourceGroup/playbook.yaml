@@ -1,0 +1,7 @@
+---
+- name: Create Azure VM
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name:
+      include_tasks: tasks/azResourceGroup.yaml

@@ -1,0 +1,9 @@
+- name: Download Pacote Apache-NiFi
+  get_url:
+    url: https://archive.apache.org/dist/nifi/1.19.1/
+    dest: /opt/apache-nifi/
+
+- name: Descomprimindo Pacote Apache-NiFi
+  unarchive:
+    src: /opt/apache-nifi/nifi-1.19.1.zip
+    remote_src: yes

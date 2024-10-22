@@ -1,0 +1,27 @@
+---
+- name: Configure nifi.properties
+  hosts: all
+  gather_facts: true
+  vars:
+    nifi_conf_dir: "/path/to/nifi/conf"
+    nifi_properties_template: "nifi.properties.j2"
+    nifi_web_http_port: 8080
+    nifi_web_https_port: 8443
+    nifi_node_protocol_port: 9090
+    nifi_node_protocol_threads: 10
+    nifi_cluster_protocol_port: 9091
+    nifi_cluster_protocol_threads: 10
+    nifi_zoo_keeper_connect_string: "localhost:2181"
+  tasks:
+  - name: Create nifi.properties
+    template:
+      src: "{{ nifi_properties_template }}"
+      dest: "{{ nifi_conf_dir }}/nifi.properties"
+    vars:
+      nifi_web_http_port: "{{ nifi_web_http_port }}"
+      nifi_web_https_port: "{{ nifi_web_https_port }}"
+      nifi_node_protocol_port: "{{ nifi_node_protocol_port }}"
+      nifi_node_protocol_threads: "{{ nifi_node_protocol_threads }}"
+      nifi_cluster_protocol_port: "{{ nifi_cluster_protocol_port }}"
+      nifi_cluster_protocol_threads: "{{ nifi_cluster_protocol_threads }}"
+      nifi_zoo_keeper_connect_string: "{{ nifi_zoo_keeper_connect_string }}"

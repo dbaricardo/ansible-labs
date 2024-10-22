@@ -1,0 +1,34 @@
+- name: Instalando uma lista de pacotes
+  hosts: all
+  tasks:
+    - name: Instalando pacotes usando loop no Debian
+      become: true
+      apt:
+        name: "{{ item }}"
+      loop:
+        - sl
+        - ncdu
+        - wget
+        - git
+        - vim
+        - jq
+        - tree
+        - unzip
+        - java_default
+    when: ansible_distribution == "Debian"
+
+    - name: Instalando pacotes usando loop no RedHat
+      become: true
+      yum:
+        name: "{{ item }}"
+      loop:
+        - sl
+        - ncdu
+        - wget
+        - git
+        - vim
+        - jq
+        - tree
+        - unzip
+        - java_default
+    when: ansible_distribution == "Red Hat"

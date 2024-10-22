@@ -1,0 +1,37 @@
+---
+- name: Scale-Up Pods with Specific Label in ARO Cluster
+  hosts: localhost
+  gather_facts: false
+  vars:
+    key_vault_name: your_key_vault_name
+    secret_name: your_secret_name
+    oc_bin: /usr/local/bin/oc
+    aro_api_url: your_aro_api_url
+    namespace: default
+    label_selector: app=your-app-label
+    replicas: 3  # Número de réplicas desejado
+
+  tasks:
+   # - name: Set environment variables for Azure authentication
+   #   ansible.builtin.set_env:
+   #     AZURE_CLIENT_ID: "{{ app_id }}"
+   #     AZURE_SECRET: "{{ client_secret }}"
+   #     AZURE_TENANT: "{{ tenant_id }}"
+   #     AZURE_SUBSCRIPTION_ID: "{{ azure_subscription_id }}"
+
+    - name: Get OpenShift token from Key Vault
+      command: >
+        az keyvault secret show --name {{ secret_name }} --vault-name {{ key_vault_name }} --query value -o tsv
+      register: openshift_token
+
+    - name: Set ARO token fact
+      set_fact:
+        openshift_token_value: "{{ openshift_token.stdout }}"
+
+    - name: Log in to OpenShift
+      shell: "{{ oc_bin }} login --token={{ openshift_token_value }} --server={{ aro_api_url }}"
+      register: oc_login
+
+    - name: Scale deployments
+      shell: "{{ oc_bin }} scale {{ item }} --replicas={{ replicas }} -n {{ namespace }}"
+      with_items: "{{ deployments.stdout_lines }}"

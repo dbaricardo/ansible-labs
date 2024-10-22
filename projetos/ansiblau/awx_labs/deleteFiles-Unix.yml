@@ -1,0 +1,33 @@
+  - name: Delete files older than specific days on specific Linux machines
+    hosts: "{{ linux_hosts }}"
+    gather_facts: yes
+
+    tasks:
+      - name: Find files older than 15 days in multiple paths
+        find:
+          paths: "{{ item }}"
+          age: 15d
+          age_stamp: mtime
+          recurse: yes
+        register: old_files_linux_15
+        with_items: "{{ linux_paths_15_days }}"
+
+      - name: Find files older than 30 days in a specific path
+        find:
+          paths: "{{ linux_path_30_days }}"
+          age: 30d
+          age_stamp: mtime
+          recurse: yes
+        register: old_files_linux_30
+
+      - name: Delete old files found for 15 days criteria
+        file:
+          path: "{{ item.path }}"
+          state: absent
+        with_items: "{{ old_files_linux_15.results | map(attribute='files') | flatten }}"
+
+      - name: Delete old files found for 30 days criteria
+        file:
+          path: "{{ item.path }}"
+          state: absent
+        with_items: "{{ old_files_linux_30.files }}"

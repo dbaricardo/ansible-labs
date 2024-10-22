@@ -1,0 +1,24 @@
+---
+- name: Create NiFi SSL Certificates
+  hosts: all
+  gather_facts: true
+  vars:
+    nifi_node_ip: "{{ ansible_ip }}"
+    nifi_toolkit_dir: "/path/to/nifi-toolkit"
+    nifi_keystore: "{{ nifi_toolkit_dir }}/keystore-{{ ansible_hostname }}.jks"
+    nifi_truststore: "{{ nifi_toolkit_dir }}/truststore-{{ ansible_hostname }}.jks"
+    nifi_keystore_password: "password"
+    nifi_truststore_password: "password"
+    nifi_dn: "CN={{ ansible_hostname }}, OU=NIFI, O=Example Inc, L=San Francisco, S=California, C=US"
+  tasks:
+  - name: Create NiFi keystore
+    command: "{{ nifi_toolkit_dir }}/bin/tls-toolkit.sh standalone -n '{{ nifi_dn }}' -o '{{ nifi_toolkit_dir }}' -k {{ nifi_keystore_password }} -t {{ nifi_truststore_password }}"
+    args:
+      chdir: "{{ nifi_toolkit_dir }}"
+  - name: Set permissions on keystore and truststore
+    file:
+      path: "{{ item }}"
+      mode: 0600
+    with_items:
+      - "{{ nifi_keystore }}"
+      - "{{ nifi_truststore }}"

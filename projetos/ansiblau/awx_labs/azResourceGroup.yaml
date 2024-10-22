@@ -1,0 +1,10 @@
+---
+- name: Create Azure VM
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create a resource group
+      azure_rm_resourcegroup:
+        name: "{{ resource_group_name }}"
+        location: "{{ resource_group_location }}"
+      register: create_rg_result

@@ -1,0 +1,36 @@
+Playbook para Escalonar Pods com Rótulo Específico no Cluster ARO
+Visão Geral
+Este playbook é projetado para escalonar automaticamente os pods com um rótulo específico em um cluster Azure Red Hat OpenShift (ARO). Ele realiza a autenticação no Azure, obtém o token do OpenShift do Azure Key Vault, faz login no OpenShift e escala os deployments conforme necessário.
+
+Objetivo
+O objetivo deste playbook é aumentar o número de réplicas dos deployments que possuem um rótulo específico, garantindo que a aplicação possa lidar com uma maior carga de trabalho.
+
+Variáveis
+azure_subscription_id: Seu ID de assinatura do Azure.
+app_id: ID do principal de serviço para autenticação no Azure.
+tenant_id: ID do locatário do Azure.
+client_secret: Segredo do principal de serviço para autenticação no Azure.
+key_vault_name: Nome do Azure Key Vault que armazena os segredos.
+secret_name: Nome do segredo no Key Vault que contém o token do OpenShift.
+oc_bin: Caminho para o binário da CLI do OpenShift.
+aro_api_url: URL da API para o cluster ARO.
+namespace: O namespace onde os pods estão localizados.
+label_selector: Rótulo usado para selecionar os deployments relevantes.
+replicas: Número desejado de réplicas para os deployments selecionados.
+Tarefas
+Logar no Azure com Principal de Serviço: Autentica no Azure usando um principal de serviço.
+Garantir que o login no Azure foi bem-sucedido: Verifica se o login no Azure foi bem-sucedido.
+Obter token do OpenShift do Key Vault: Recupera o token do OpenShift do Azure Key Vault.
+Definir fato do token do ARO: Armazena o token do OpenShift recuperado para uso posterior.
+Logar no OpenShift: Faz login no cluster OpenShift usando o token recuperado.
+Garantir que o login no OpenShift foi bem-sucedido: Verifica se o login no OpenShift foi bem-sucedido.
+Obter deployments com rótulo específico: Recupera os deployments que possuem o rótulo especificado.
+Garantir que os deployments foram encontrados: Verifica se os deployments com o rótulo especificado foram encontrados.
+Escalonar deployments: Escalona os deployments selecionados para o número desejado de réplicas.
+Garantir que o escalonamento foi bem-sucedido: Verifica se o escalonamento dos deployments foi bem-sucedido.
+Uso
+Configurar Variáveis: Atualize a seção de variáveis com seus valores específicos, incluindo ID de assinatura do Azure, nome do Key Vault, nome do segredo, URL da API do ARO, e credenciais do principal de serviço.
+Executar o Playbook: Execute o playbook usando Ansible para realizar o escalonamento dos pods automaticamente.
+Monitorar Saída: Verifique a saída de cada tarefa para garantir que o playbook foi executado com sucesso e que os deployments foram escalonados conforme necessário.
+Conclusão
+Este playbook fornece uma abordagem automatizada para escalonar deployments com rótulos específicos no Azure Red Hat OpenShift, garantindo que a aplicação possa lidar com cargas de trabalho crescentes de forma eficiente e com mínima intervenção manual.

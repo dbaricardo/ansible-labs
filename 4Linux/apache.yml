@@ -1,0 +1,17 @@
+---
+- hosts: webserver
+  become: yes
+  tasks:
+  - name: Instalando o Apache
+    package:
+      name: ['apache2', 'libapache2-mod-security2']
+      state: present
+  - name: Garantindo inicializacao do Apache
+    service:
+      name: apache2
+      state: started
+      enabled: yes
+  - name: Garantindo Site
+    copy:
+      src: site/
+      dest: /var/www/html

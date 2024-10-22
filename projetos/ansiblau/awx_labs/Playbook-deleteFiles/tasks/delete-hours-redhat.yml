@@ -1,0 +1,13 @@
+  - name: Find files older than 1 hour in a specific path
+    find:
+      paths: "{{ linux_path_1_hour }}"
+      age: 1h
+      age_stamp: mtime
+      recurse: yes
+    register: old_files_linux_1h
+
+  - name: Delete old files found for 1 hour criteria
+    file:
+      path: "{{ item.path }}"
+      state: absent
+    with_items: "{{ old_files_linux_1h.files }}"

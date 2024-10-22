@@ -1,0 +1,25 @@
+---
+- name: Encontrar e reciclar pods com erros em um namespace específico no ARO
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Obter informações dos pods no namespace específico
+      command: oc get pods -n meu-namespace -o json
+      register: pod_info
+
+    - name: Filtrar nomes dos pods com status de erro
+      set_fact:
+        nomes_pods_com_erros: "{{ nomes_pods_com_erros | default([]) + [item.metadata.name] }}"
+      loop: "{{ pod_info.stdout | from_json | json_query('items[?status.phase==`Failed`]') }}"
+      loop_control:
+        label: "{{ item.metadata.name }}"
+
+    - name: Exibir nomes dos pods com erros
+      debug:
+        var: nomes_pods_com_erros
+
+    - name: Reciclar pods com erros
+      command: oc delete pod {{ item }} -n meu-namespace
+      with_items: "{{ nomes_pods_com_erros }}"
+      when: nomes_pods_com_erros is defined

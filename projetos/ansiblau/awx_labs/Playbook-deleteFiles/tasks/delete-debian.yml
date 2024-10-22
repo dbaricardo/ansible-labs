@@ -1,0 +1,64 @@
+  - name: Find files older than 15 days in multiple paths
+    find:
+      paths: "{{ item }}"
+      age: "{{ age_15_days }}"
+      age_stamp: mtime
+      recurse: yes
+    register: old_files_linux_15
+    with_items: "{{ linux_paths_15_days }}"
+    ignore_errors: yes
+  
+  - name: Debug files found for 15 days criteria
+    debug:
+      var: old_files_linux_15
+  
+  - name: Find files older than 30 days in a specific path
+    find:
+      paths: "{{ linux_path_30_days }}"
+      age: "{{ age_30_days }}"
+      age_stamp: mtime
+      recurse: yes
+    register: old_files_linux_30
+    ignore_errors: yes
+  
+  - name: Debug files found for 30 days criteria
+    debug:
+      var: old_files_linux_30
+  
+  - name: Delete old files found for 15 days criteria
+    file:
+      path: "{{ item.path }}"
+      state: absent
+    with_items: "{{ old_files_linux_15.results | map(attribute='files') | flatten }}"
+    when: old_files_linux_15 is defined and old_files_linux_15.results is defined and old_files_linux_15.results | length > 0
+    ignore_errors: yes
+  
+  - name: Delete old files found for 30 days criteria
+    file:
+      path: "{{ item.path }}"
+      state: absent
+    with_items: "{{ old_files_linux_30.files }}"
+    when: old_files_linux_30 is defined and old_files_linux_30.files is defined and old_files_linux_30.files | length > 0
+    ignore_errors: yes
+  
+  - name: Find files older than 1 minute in specific paths
+    find:
+      paths: "{{ item }}"
+      age: "{{ age_1_minute }}"
+      age_stamp: mtime
+      recurse: yes
+    register: old_files_linux_1_min
+    with_items: "{{ linux_paths_1_minute }}"
+    ignore_errors: yes
+  
+  - name: Debug files found for 1 minute criteria
+    debug:
+      var: old_files_linux_1_min
+  
+  - name: Delete old files found for 1 minute criteria
+    file:
+      path: "{{ item.path }}"
+      state: absent
+    with_items: "{{ old_files_linux_1_min.results | map(attribute='files') | flatten }}"
+    when: old_files_linux_1_min is defined and old_files_linux_1_min.results is defined and old_files_linux_1_min.results | length > 0
+    ignore_errors: yes

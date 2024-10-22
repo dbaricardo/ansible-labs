@@ -1,0 +1,33 @@
+- name: Provisionando o ambiente NiFi-Cluster
+  hosts: all
+  become: yes
+  tasks:
+  - name: Garantindo que o  pacote JAVA esteja instalado (Ubuntu/Debian)
+    apt:
+      name: openjdk-8-jdk.x86_64
+      state: present
+      update_cache: yes
+    when: ansible_os_family == 'Debian'
+  - name: Garantindo que o  pacote JAVA esteja instalado (Centos/RHEL)
+    yum:
+      name: java-1.8.0-openjdk.x86_64
+      state: present
+      update_cache: yes
+    when: ansible_os_family == 'RedHat'
+  - hosts: all
+  - name: Baixando pacote NiFi
+    tasks:
+    - name: Criando diretoio /opt/apache-nifi
+      file:
+        path: /opt/apache-nifi
+        state: directory
+        mode: 0777
+
+
+
+
+
+  #- name: Download do Pacote NiFi e Descompacta em /opt/apache-nifi    
+  #  hosts: nifi
+  #  get_url: url=https://dlcdn.apache.org/nifi/1.17.0/nifi-1.17.0-bin.zip dest=/opt/apache-nifi
+

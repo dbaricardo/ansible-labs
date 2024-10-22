@@ -1,0 +1,58 @@
+Claro, vou detalhar cada linha do playbook e do inventário para você.
+
+### Arquivo de inventário (inventory.yaml):
+
+```yaml
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+```
+
+- **all:** Define o grupo de hosts "all", que inclui todos os hosts listados.
+- **hosts:** Lista de hosts sob o grupo "all".
+- **localhost:** Nome do host. Aqui estamos usando `localhost` porque o playbook será executado na máquina local.
+- **ansible_connection: local:** Especifica que a conexão será local, ou seja, o Ansible não tentará se conectar remotamente.
+
+### Arquivo de playbook (playbook.yaml):
+
+```yaml
+- name: Gerenciar Pod no Kubernetes
+  hosts: localhost
+  gather_facts: no
+  vars:
+    pod_name: "{{ lookup('env', 'POD_NAME') }}"
+    namespace: "default"
+  tasks:
+    - name: Get Pod info
+      k8s_info:
+        api_version: v1
+        kind: Pod
+        name: "{{ pod_name }}"
+        namespace: "{{ namespace }}"
+      register: pod_info
+
+    - name: Print Pod info
+      debug:
+        var: pod_info
+```
+
+- **- name: Gerenciar Pod no Kubernetes:** Nome da play que descreve o que ela faz. No caso, gerenciar um pod no Kubernetes.
+- **hosts: localhost:** Especifica que a play será executada no host `localhost`, que foi definido no inventário.
+- **gather_facts: no:** Desativa a coleta de fatos do Ansible, o que pode acelerar a execução se não precisar dessas informações.
+- **vars:** Define as variáveis usadas na play.
+  - **pod_name: "{{ lookup('env', 'POD_NAME') }}":** Define a variável `pod_name` com o valor da variável de ambiente `POD_NAME`. A função `lookup('env', 'POD_NAME')` é usada para buscar o valor da variável de ambiente.
+  - **namespace: "default":** Define a variável `namespace` com o valor `"default"`. Esta é a namespace onde o pod está localizado.
+- **tasks:** Lista de tarefas a serem executadas.
+  - **- name: Get Pod info:** Nome da tarefa que descreve o que ela faz. No caso, obter informações sobre um pod.
+  - **k8s_info:** Módulo do Ansible usado para obter informações de objetos Kubernetes.
+    - **api_version: v1:** Especifica a versão da API do Kubernetes.
+    - **kind: Pod:** Especifica o tipo de objeto Kubernetes, que é um Pod.
+    - **name: "{{ pod_name }}":** Usa a variável `pod_name` para especificar o nome do pod.
+    - **namespace: "{{ namespace }}":** Usa a variável `namespace` para especificar a namespace do pod.
+  - **register: pod_info:** Armazena o resultado da tarefa na variável `pod_info`.
+  - **- name: Print Pod info:** Nome da tarefa que descreve o que ela faz. No caso, imprimir informações sobre o pod.
+  - **debug:** Módulo do Ansible usado para imprimir informações durante a execução do playbook.
+    - **var: pod_info:** Especifica que a variável `pod_info` deve ser impressa.
+
+Com isso, o playbook está configurado para receber o nome de um pod via variável de ambiente, buscar informações sobre esse pod no Kubernetes e imprimir essas informações.

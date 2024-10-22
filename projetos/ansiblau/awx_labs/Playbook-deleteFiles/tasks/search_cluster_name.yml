@@ -1,0 +1,32 @@
+---
+- name: Verificar Pod em Clusters
+  hosts: localhost
+  gather_facts: no
+  vars:
+    clusters:
+      - cluster1
+      - cluster2
+      - cluster3
+    domains:
+      - domain1.com
+      - domain2.com
+      - domain3.com
+    namespaces:
+      - namespace1
+      - namespace2
+      - namespace3
+    pod_name: "pod-aiops"
+    token: "your_token_here"
+  tasks:
+    - name: Verificar Pod em cada Cluster
+      block:
+        - name: Loop through clusters and domains
+          set_fact:
+            cluster_name: "{{ item[0] }}"
+            domain_name: "{{ item[1] }}"
+          loop: "{{ lookup('cartesian', clusters, domains) }}"
+
+        - name: Login no cluster usando token
+          command: >
+            oc login --server=https://api.{{ cluster_name }}.{{ domain_name }} --token={{ token }} --insecure-skip-tls-verify=true
+          register: login_result

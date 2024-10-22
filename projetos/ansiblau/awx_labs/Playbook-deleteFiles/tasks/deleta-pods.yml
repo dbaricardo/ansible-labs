@@ -1,0 +1,51 @@
+- name: Busca todos namespaces
+  shell: oc get projects -o jsonpath="{.items[*].metadata.name}"
+  register: namespaces_result
+
+- name: Inicializa var namespaces
+  set_fact:
+    namespaces: ""
+
+- name: Busca o namespace do pod {{ pod_name }}
+  shell: oc get pod {{ pod_name }} -n {{ item }} &> /dev/null && echo found || echo not found
+  register: pod_check
+  with_items: "{{ namespaces_result.stdout.split() }}"
+  until: pod_check.stdout.find('found') != -1
+  retries: 1
+  delay: 1
+
+- name: Apresenta o namespace do pod
+  debug:
+    msg: >
+      {% namespaces %}
+        O pod {{ pod_name }} pertence ao namespace {{ namespaces }}
+      {% else %}
+        O pod {{ pod_name }} nao foi encontrado em nenhum namespace
+      {% endif %}
+
+- name: Info ReplicaSet
+  shell: oc describe pod {{ pod_name }} -n {{ namespaces }}
+  register: pod_description
+
+- name: Obtem nome do ReplicaSet
+  set_fact:
+    replica_set_raw: "{{ pod_description.stdout | regex_search('Controlled By:\\s+ReplicaSet/(\\S+)','\\1') }}"
+
+- name: Remove caracteres da variavel replica_set
+  set_fact:
+    replica_set: "{{ replica_set_raw | join('') }}"
+
+- name: Exibe nome do ReplicaSet associado ao pod {{ pod_name }}
+  debug:
+    msg: "O ReplicaSet associado: {{ replica_set }}"
+
+- name: Obtem o Deployment do ReplicaSet {{ replica_set }} associado ao pod {{ pod_name }}
+  command: oc get replicaset {{ replica_set }} -n {{ namespaces }} -o jsonpath='{.metadata.ownerReference[0].name}'
+  register: deployment_name
+
+- name: Exibe o nome do Deployment
+  debug:
+    msg: "O Deployment associado: {{ deplyment_name }}"
+
+- name: Deleta o pod -- {{ pod_name }}
+  command: "oc delete pod {{ pod_name }} -n {{ namespaces }}" 

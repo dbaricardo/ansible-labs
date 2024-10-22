@@ -1,0 +1,87 @@
+---
+# Definição de variáveis no início do playbook
+vars:
+  keyvault_url: "https://your-keyvault-url.vault.azure.net/"  # URL do KeyVault
+  secret_name: "cyberark-credentials"  # Nome do segredo a ser recuperado
+  client_id: "your-client-id"  # ID do cliente para autenticação
+  client_secret: "your-client-secret"  # Segredo do cliente para autenticação
+  tenant_id: "your-tenant-id"  # ID do locatário para autenticação
+  cyberark_api_base_url: "http://components.cyberark.local"  # URL base da API do CyberArk
+  cyberark_username: "bizdev"  # Nome de usuário para autenticação no CyberArk
+  cyberark_password: "Cyberark1"  # Senha para autenticação no CyberArk
+  account_safe: "Test"  # Nome do cofre (safe) para a conta
+  account_address: "cyberark.local"  # Endereço da conta a ser criada
+  account_username: "administrator-x"  # Nome de usuário da conta a ser criada
+  account_platform_id: "WinServerLocal"  # ID da plataforma da conta a ser criada
+  account_secret: "@N&Ibl3!"  # Senha da conta a ser criada
+  account_logon_domain: "cyberark"  # Domínio de logon da conta a ser criada
+  account_owner_name: "ansible_user"  # Nome do proprietário da conta a ser criada
+  reconcile_safe: "Domain_Admins"  # Nome do cofre (safe) para a conta a ser reconciliada
+  reconcile_address: "prod.cyberark.local"  # Endereço da conta a ser reconciliada
+  reconcile_username: "admin"  # Nome de usuário da conta a ser reconciliada
+  reconcile_platform_id: "WinDomain"  # ID da plataforma da conta a ser reconciliada
+  reconcile_logon_domain: "PROD"  # Domínio de logon da conta a ser reconciliada
+  reconcile_new_secret: "Ama123ah12@#!Xaamdjbdkl@#112"  # Nova senha para a reconciliação
+
+tasks:
+  - name: Retrieve credentials from KeyVault  # Nome da tarefa: Recuperar credenciais do KeyVault
+    azure_rm_keyvaultsecret_info:
+      vault_url: "{{ keyvault_url }}"  # URL do KeyVault
+      secret_name: "{{ secret_name }}"  # Nome do segredo a ser recuperado
+      client_id: "{{ client_id }}"  # ID do cliente para autenticação
+      client_secret: "{{ client_secret }}"  # Segredo do cliente para autenticação
+      tenant: "{{ tenant_id }}"  # ID do locatário para autenticação
+    register: keyvault_credentials  # Registrar a saída na variável keyvault_credentials
+  
+  - name: Set CyberArk credentials as environment variables  # Nome da tarefa: Definir credenciais do CyberArk como variáveis de ambiente
+    set_fact:
+      cyberark_username: "{{ keyvault_credentials['secrets']['username'] }}"  # Definir o nome de usuário do CyberArk
+      cyberark_password: "{{ keyvault_credentials['secrets']['password'] }}"  # Definir a senha do CyberArk
+  
+  - name: Logon to CyberArk Vault  # Nome da tarefa: Fazer login no CyberArk Vault
+    cyberark_authentication:
+      api_base_url: "{{ cyberark_api_base_url }}"  # URL base da API do CyberArk
+      validate_certs: false  # Não validar certificados
+      username: "{{ cyberark_username }}"  # Nome de usuário para autenticação
+      password: "{{ cyberark_password }}"  # Senha para autenticação
+    register: cyberark_session  # Registrar a sessão na variável cyberark_session
+    
+  - name: Creating an Account using the PAS WebServices SDK  # Nome da tarefa: Criar uma conta usando o PAS WebServices SDK
+    cyberark_account:
+      logging_level: DEBUG  # Nível de log: DEBUG
+      identified_by: "address,username"  # Identificar a conta por endereço e nome de usuário
+      safe: "{{ account_safe }}"  # Nome do cofre (safe)
+      address: "{{ account_address }}"  # Endereço da conta
+      username: "{{ account_username }}"  # Nome de usuário da conta
+      platform_id: "{{ account_platform_id }}"  # ID da plataforma
+      secret: "{{ account_secret }}"  # Senha da conta
+      platform_account_properties:
+        LogonDomain: "{{ account_logon_domain }}"  # Domínio de logon
+        OwnerName: "{{ account_owner_name }}"  # Nome do proprietário
+      secret_management:
+        automatic_management_enabled: true  # Gerenciamento automático habilitado
+      state: present  # Estado desejado: presente
+      cyberark_session: "{{ cyberark_session }}"  # Sessão do CyberArk
+    register: cyberarkaction  # Registrar a ação na variável cyberarkaction
+    
+  - name: Rotate credential via reconcile and providing the password to be changed to  # Nome da tarefa: Rotacionar credencial via reconciliação e fornecer a nova senha
+    cyberark_account:
+      identified_by: "address,username"  # Identificar a conta por endereço e nome de usuário
+      safe: "{{ reconcile_safe }}"  # Nome do cofre (safe)
+      address: "{{ reconcile_address }}"  # Endereço da conta
+      username: "{{ reconcile_username }}"  # Nome de usuário da conta
+      platform_id: "{{ reconcile_platform_id }}"  # ID da plataforma
+      platform_account_properties:
+        LogonDomain: "{{ reconcile_logon_domain }}"  # Domínio de logon
+      secret_management:
+        new_secret: "{{ reconcile_new_secret }}"  # Nova senha
+        management_action: "reconcile"  # Ação de gerenciamento: reconciliação
+        automatic_management_enabled: true  # Gerenciamento automático habilitado
+      state: present  # Estado desejado: presente
+      cyberark_session: "{{ cyberark_session }}"  # Sessão do CyberArk
+    register: reconcileaccount  # Registrar a ação na variável reconcileaccount
+    
+  - name: Logoff from CyberArk Vault  # Nome da tarefa: Fazer logoff do CyberArk Vault
+    cyberark_authentication:
+      state: absent  # Estado desejado: ausente
+      cyberark_session: "{{ cyberark_session }}"  # Sessão do CyberArk

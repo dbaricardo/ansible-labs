@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: Aceitar automaticamente a fingerprint SSH do host
+      known_hosts:
+        name: "{{ inventory_hostname }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + inventory_hostname) }}"
+        state: present

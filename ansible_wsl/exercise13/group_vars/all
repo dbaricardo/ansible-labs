@@ -1,0 +1,6 @@
+USRNM: commonuser
+COMM: Variable from groupvars_all file
+ntp0: a.ntp.br
+ntp1: b.ntp.br
+ntp2: c.ntp.br
+ntp3: d.ntp.br

@@ -1,0 +1,7 @@
+---
+- name: Create Azure VM
+  hosts: localhost
+  gather_facts: false
+  roles:
+   # - AZ-login
+    - AZ-createRG

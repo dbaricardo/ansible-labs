@@ -1,0 +1,40 @@
+Playbook de Auto-Cura para Coleta de Lixo no Azure Red Hat OpenShift
+Visão Geral
+Este playbook foi projetado para automatizar o processo de auto-cura para problemas de coleta de lixo no Azure Red Hat OpenShift (ARO). Ele identifica pods problemáticos e garante que estejam funcionando corretamente, aplicando rótulos, verificando logs para erros e reiniciando ou escalando os pods conforme necessário.
+
+Objetivo
+O principal objetivo deste playbook é manter a estabilidade e o desempenho do cluster OpenShift abordando automaticamente os problemas de coleta de lixo. Isso ajuda a reduzir a intervenção manual e garante que os processos de coleta de lixo estejam funcionando sem problemas.
+
+Variáveis
+oc_bin: Caminho para o binário da CLI do OpenShift.
+namespace: O namespace onde os pods estão localizados.
+problematic_pod_label: Rótulo a ser aplicado aos pods identificados para coleta de lixo.
+selective_label: Rótulo existente usado para selecionar os pods relevantes.
+azure_subscription_id: Seu ID de assinatura do Azure.
+key_vault_name: Nome do Azure Key Vault que armazena os segredos.
+secret_name: Nome do segredo no Key Vault que contém o token do OpenShift.
+aro_api_url: URL da API para o cluster ARO.
+app_id: ID do principal de serviço para autenticação no Azure.
+tenant_id: ID do locatário do Azure.
+client_secret: Segredo do principal de serviço para autenticação no Azure.
+Tarefas
+Logar no Azure: Autentica no Azure usando um principal de serviço.
+Garantir que o login no Azure foi bem-sucedido: Verifica se o login no Azure foi bem-sucedido.
+Obter token do OpenShift do Key Vault: Recupera o token do OpenShift do Azure Key Vault.
+Definir fato do token do ARO: Armazena o token do OpenShift recuperado para uso posterior.
+Logar no OpenShift: Faz login no cluster OpenShift usando o token recuperado.
+Garantir que o login no OpenShift foi bem-sucedido: Verifica se o login no OpenShift foi bem-sucedido.
+Adicionar rótulo aos pods selecionados: Adiciona um rótulo aos pods que correspondem ao rótulo seletivo.
+Verificar problemas no coletor de lixo: Verifica os logs dos pods rotulados em busca de erros relacionados à coleta de lixo.
+Determinar se ação é necessária: Define um fato para indicar se alguma ação é necessária com base na verificação dos logs.
+Notificar se nenhum problema foi encontrado: Registra uma mensagem se nenhum problema de coleta de lixo for encontrado.
+Reiniciar pods problemáticos: Exclui os pods problemáticos se problemas forem detectados.
+Escalar réplicas: Escala a implantação dos pods problemáticos para garantir que estejam funcionando corretamente.
+Verificar se os pods estão em execução: Verifica o status dos pods para garantir que estejam em execução.
+Aguardar até que os pods estejam em execução: Aguarda até que os pods estejam em estado de execução.
+Uso
+Configurar Variáveis: Atualize a seção de variáveis com seus valores específicos, incluindo ID de assinatura do Azure, nome do Key Vault, nome do segredo, URL da API do ARO e credenciais do principal de serviço.
+Executar o Playbook: Execute o playbook usando Ansible para realizar os passos de auto-cura automaticamente.
+Monitorar Saída: Verifique a saída de cada tarefa para garantir que o playbook foi executado com sucesso e que quaisquer problemas foram resolvidos.
+Conclusão
+Este playbook fornece uma abordagem automatizada para gerenciar e resolver problemas de coleta de lixo no Azure Red Hat OpenShift, garantindo a saúde e o desempenho do cluster com mínima intervenção manual.

@@ -1,0 +1,2 @@
+- name: az login
+  script: azlogin.sh

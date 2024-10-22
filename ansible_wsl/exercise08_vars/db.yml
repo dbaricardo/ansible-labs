@@ -1,0 +1,49 @@
+---
+- name: DBserver setup
+  hosts: dbservers
+  become: yes
+  vars:
+#    dbname: electric
+#    dbuser: current
+#    dbpass: tesla
+  tasks:
+    - debug:
+        var: dbuser
+
+    - debug:
+        msg: " The dbname is {{dbname}}"
+
+    - name: Install mariadb-server
+      yum:
+        name: mariadb-server
+        state: present
+
+    - name: Install Dependencies PyMySQL
+      yum:
+        name: MySQL-python.x86_64
+        state: present
+
+    - name: Start mariaDB service
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+    
+    - name: Create a new database
+      community.mysql.mysql_db:
+        name: "{{ dbname }}"
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+    - name: Create Database
+      community.mysql.mysql_user:
+        name: "{{ dbuser }}"
+        password: "{{ dbpass }}"
+        priv: '*.*:ALL'
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+      register: dbout
+
+    - name: Print dbout variable
+      debug:
+        var: dbout

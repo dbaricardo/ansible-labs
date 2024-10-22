@@ -1,0 +1,7 @@
+- name: Garantindo Cluster NiFi Seguro
+  hosts: all
+  become: true
+  roles:
+    - update_os
+    - java_install
+    - nifi_download

@@ -1,0 +1,11 @@
+---
+- name: Install Dynatrace OneAgent on Windows
+  hosts: localhost
+  become: yes
+  gather_facts: yes
+  become_method: su
+  become_user: root
+  tasks:
+    - name: Install Dynatrace OneAgent on Windows
+      include_tasks: tasks/itm_installer.yml
+    #  include_tasks: tasks/delete-{{ ansible_os_family

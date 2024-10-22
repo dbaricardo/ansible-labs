@@ -1,0 +1,11 @@
+---
+- name: Deleta arquivos no Windows
+  hosts: "{{ windows_hosts }}"
+  gather_facts: yes
+  become: yes
+  become_method: runas
+  become_user: Administrator
+  tasks:
+    - name: Deleta os arquivos no Windows
+      include_tasks: tasks/delete-windows.yml
+    #  include_tasks: tasks/delete-{{ ansible_os_family|lower }}.yml

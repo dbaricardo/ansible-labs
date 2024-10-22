@@ -1,0 +1,22 @@
+- name: Garantindo o PATH /opt/apache-nifi
+  ansible.builtin.file:
+    path: /opt/apache-nifi
+    state: directory
+    mode: '0755'
+
+- name: Download Pacote Apache-NiFi
+  get_url:
+    url: https://archive.apache.org/dist/nifi/1.19.1/nifi-1.19.1-bin.zip
+    dest: /opt/apache-nifi/
+    force: true
+
+- name: Garantindo Pacote UNZIP
+  package:
+    name: unzip
+    state: present
+
+- name: Descomprimindo Pacote Apache-NiFi
+  unarchive:
+    src: /opt/apache-nifi/nifi-1.19.1-bin.zip
+    dest: /opt/apache-nifi
+    remote_src: yes

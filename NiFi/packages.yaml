@@ -1,0 +1,16 @@
+# Playbook para instalacao de pacotes usando packages
+- hosts: all
+  become: yes
+  roles:
+  - java_default
+  - vim
+  - tree
+  - unzip
+  - wget
+  - tldr
+
+  tasks:
+    - name: Instalando Pacotes
+      become: true
+      yum:
+        name: "{{ packages }}"

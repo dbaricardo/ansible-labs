@@ -1,0 +1,6 @@
+- name: Log in to Azure
+  azure_rm_auth:
+    client_id: "{{ app_id }}"
+    secret: "{{ client_secret }}"
+    tenant: "{{ tenant_id }}"
+    subscription_id: "{{ azure_subscription_id }}"

@@ -1,0 +1,16 @@
+
+#windows_hosts:
+#  - 192.168.1.20
+#  - 192.168.1.21
+#linux_hosts:
+#  - 192.168.1.10
+#  - 192.168.1.11
+#windows_paths_15_days:
+#  - "C:\\path\\to\\your\\dir1"
+#  - "C:\\path\\to\\your\\dir2"
+#linux_paths_15_days:
+#  - /path/to/your/dir1
+#  - /path/to/your/dir2
+#  - /path/to/your/dir3
+#windows_path_30_days: "C:\\path\\to\\your\\dir3"
+#linux_path_30_days: /path/to/your/dir4

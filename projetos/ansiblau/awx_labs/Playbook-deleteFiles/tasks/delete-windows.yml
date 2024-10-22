@@ -1,0 +1,53 @@
+  - name: Find files older than 15 days in two paths
+    win_shell: |
+      Get-ChildItem -Path "{{ item }}" -Recurse | 
+      Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-15) } | 
+      Select-Object -ExpandProperty FullName
+    register: old_files_windows_15
+    with_items: "{{ windows_paths_15_days }}"
+    ignore_errors: true
+
+  - name: Aggregate old files older than 15 days
+    set_fact:
+      files_to_delete_15: "{{ files_to_delete_15 | default([]) + old_files_windows_15.results | map(attribute='stdout_lines') | list | flatten }}"
+
+  #- name: Find files older than 1 hour in a specific path
+  #  win_shell: |
+  #    Get-ChildItem -Path "{{ item }}" -Recurse | 
+  #    Where-Object { $_.LastWriteTime -lt (Get-Date).AddHours(-1) } | 
+  #    Select-Object -ExpandProperty FullName
+  #  register: old_files_windows_1h
+  #  with_items: "{{ windows_path_1_hour }}"
+  #  ignore_errors: true
+
+  #- name: Aggregate old files older than 1 hour
+  #  set_fact:
+  #    files_to_delete_1h: "{{ files_to_delete_1h | default([]) + old_files_windows_1h.results | map(attribute='stdout_lines') | list | flatten }}"
+
+  - name: Find files older than 30 days in specific paths
+    win_shell: |
+      Get-ChildItem -Path "{{ item }}" -Recurse | 
+      Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) } | 
+      Select-Object -ExpandProperty FullName
+    register: old_files_windows_30
+    with_items: "{{ windows_paths_30_days }}"
+    ignore_errors: true
+
+  - name: Aggregate old files older than 30 days
+    set_fact:
+      files_to_delete_30: "{{ files_to_delete_30 | default([]) + old_files_windows_30.results | map(attribute='stdout_lines') | list | flatten }}"
+
+  - name: Delete old files on Windows for 15 days criteria
+    win_shell: Remove-Item -Path "{{ item }}" -Force
+    when: files_to_delete_15 | length > 0
+    with_items: "{{ files_to_delete_15 }}"
+
+  #- name: Delete old files on Windows for 1 hour criteria
+  #  win_shell: Remove-Item -Path "{{ item }}" -Force
+  #  when: files_to_delete_1h | length > 0
+  #  with_items: "{{ files_to_delete_1h }}"
+
+  - name: Delete old files on Windows for 30 days criteria
+    win_shell: Remove-Item -Path "{{ item }}" -Force
+    when: files_to_delete_30 | length > 0
+    with_items: "{{ files_to_delete_30 }}"

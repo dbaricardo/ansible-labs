@@ -1,0 +1,68 @@
+---
+- name: Scale-Up Pods with Specific Label in ARO Cluster
+  hosts: localhost
+  gather_facts: false
+  vars:
+    azure_subscription_id: your_subscription_id
+    app_id: your_service_principal_id
+    tenant_id: your_tenant_id
+    client_secret: your_client_secret
+    key_vault_name: your_key_vault_name
+    secret_name: your_secret_name
+    oc_bin: /usr/local/bin/oc
+    aro_api_url: your_aro_api_url
+    namespace: default
+    label_selector: app=your-app-label
+    replicas: 3  # Número de réplicas desejado
+
+  tasks:
+    - name: Log in to Azure using Service Principal
+      azure_rm.azure_rm_auth:
+        tenant: "{{ tenant_id }}"
+        client_id: "{{ app_id }}"
+        secret: "{{ client_secret }}"
+        subscription_id: "{{ azure_subscription_id }}"
+      register: azure_auth
+
+    - name: Ensure Azure login was successful
+      fail:
+        msg: "Azure login failed"
+      when: azure_auth.failed
+
+    - name: Get OpenShift token from Key Vault
+      azure_rm.azure_rm_keyvaultsecret_info:
+        vault_uri: "https://{{ key_vault_name }}.vault.azure.net/"
+        secret_name: "{{ secret_name }}"
+      register: aro_token
+
+    - name: Set ARO token fact
+      set_fact:
+        aro_token_value: "{{ aro_token.secrets[0].value }}"
+
+    - name: Log in to OpenShift
+      shell: "{{ oc_bin }} login --token={{ aro_token_value }} --server={{ aro_api_url }}"
+      register: oc_login
+
+    - name: Ensure OpenShift login was successful
+      fail:
+        msg: "OpenShift login failed"
+      when: oc_login.rc != 0
+
+    - name: Get deployments with specific label
+      shell: "{{ oc_bin }} get deployment -l {{ label_selector }} -n {{ namespace }} -o name"
+      register: deployments
+
+    - name: Ensure deployments were found
+      fail:
+        msg: "No deployments found with label {{ label_selector }}"
+      when: deployments.stdout == ""
+
+    - name: Scale deployments
+      shell: "{{ oc_bin }} scale {{ item }} --replicas={{ replicas }} -n {{ namespace }}"
+      with_items: "{{ deployments.stdout_lines }}"
+      register: scale_output
+
+    - name: Ensure scaling was successful
+      fail:
+        msg: "Scaling failed"
+      when: scale_output.failed

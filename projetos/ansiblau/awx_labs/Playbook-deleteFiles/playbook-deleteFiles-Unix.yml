@@ -1,0 +1,21 @@
+---
+- name: Delete files older than specific days on specific Linux machines
+  hosts: "{{ linux_hosts }}"
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Deleta os arquivos no Unix
+      include_tasks: tasks/delete-{{ ansible_os_family|lower }}.yml
+     # when: ansible_os_family in ['redhat', 'Debian', 'suse', 'solaris', 'AIX']
+
+    #- name: Deleta arquivos criados a mais de 1h no Unix
+    #  include_tasks: tasks/delete-hours-{{ ansible_os_family|lower }}.yml
+     # when: ansible_os_family in ['redhat', 'Debian', 'suse', 'solaris', 'AIX']
+
+#- name: Deleta arquivos no Windows
+#  hosts: "{{ windows_hosts }}"
+#  gather_facts: yes
+#  tasks:
+#    - name: Deleta os arquivos no Windows
+#      include_tasks: tasks/delete-{{ ansible_os_family|lower }}.yml
+#      when: ansible_os_family in ['Windows']

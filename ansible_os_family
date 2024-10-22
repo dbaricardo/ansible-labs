@@ -1,0 +1,29 @@
+#Aqui está um exemplo de um playbook Ansible que instala o pacote "vim" em distribuições Debian e CentOS:
+
+---
+- name: Install Vim
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Vim on Debian-based systems
+      apt:
+        name: vim
+        state: latest
+      when: ansible_os_family == "Debian"
+
+    - name: Install Vim on Redhat-based systems
+      yum:
+        name: vim
+        state: latest
+      when: ansible_os_family == "RedHat"
+
+
+# Este playbook tem duas tarefas, uma para instalar o pacote "vim" em sistemas baseados em Debian e outra para instalar o pacote "vim" em sistemas baseados em RedHat (como CentOS). Cada tarefa usa o módulo "apt" ou "yum" do Ansible, dependendo da distribuição Linux. A clausula "when" é usada para especificar em qual distribuição deve ser executada cada tarefa.
+
+# Você pode executar este playbook usando o comando ansible-playbook e o arquivo de inventário que lista as máquinas remotas que deseja gerenciar.
+
+# Comando para rodar playbook
+ansible-playbook -i inventory.txt install_vim.yml
+
+
+# Lembrando que é importante ter o ansible instalado na sua máquina local e as máquinas remotas precisam ter o ssh configurado e acessíveis.

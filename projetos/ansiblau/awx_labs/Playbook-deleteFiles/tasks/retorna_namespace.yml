@@ -1,0 +1,38 @@
+---
+- name: Find the namespace of a specific pod and continue with the result
+  hosts: localhost
+  vars:
+    pod_name: "<POD_NAME>"
+  tasks:
+    - name: Copy the script to the remote host
+      copy:
+        src: scripts/find_pod_namespace.sh
+        dest: /tmp/find_pod_namespace.sh
+        mode: '0755'
+
+    - name: Run the find_pod_namespace.sh script
+      shell: /tmp/find_pod_namespace.sh {{ pod_name }}
+      register: script_output
+      ignore_errors: yes
+
+    - name: Check if pod was found
+      fail:
+        msg: "Pod {{ pod_name }} was not found in any namespace."
+      when: "'NOT_FOUND' in script_output.stdout"
+
+    - name: Set the namespace as a fact
+      set_fact:
+        pod_namespace: "{{ script_output.stdout }}"
+
+    - name: Display the result
+      debug:
+        msg: "O pod {{ pod_name }} pertence ao namespace {{ pod_namespace }}."
+
+    # Exemplo de task subsequente que utiliza o namespace encontrado
+    - name: Use the namespace in a subsequent task
+      shell: echo "Using namespace {{ pod_namespace }} for subsequent tasks"
+      register: subsequent_task_output
+
+    - name: Display subsequent task result
+      debug:
+        msg: "{{ subsequent_task_output.stdout }}"

@@ -1,0 +1,6 @@
+*.sh
+# Ignorar arquivos com segredos de Azure
+Azure_ansible/infra_test/environment_test.yaml
+Azure_ansible/infra_test/rg.yaml
+Template/azure-creds.yaml
+Template/resourceGroupCreate.yaml

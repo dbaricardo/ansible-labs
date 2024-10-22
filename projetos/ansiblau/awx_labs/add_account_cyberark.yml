@@ -1,0 +1,47 @@
+---
+- name: Authenticate with CyberArk using KeyVault credentials
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Retrieve credentials from KeyVault
+      azure_rm_keyvaultsecret_info:
+        vault_url: "https://your-keyvault-url.vault.azure.net/"
+        secret_name: "cyberark-credentials"
+        client_id: "your-client-id"
+        client_secret: "your-client-secret"
+        tenant: "your-tenant-id"
+      register: keyvault_credentials
+
+    - name: Set CyberArk credentials as environment variables
+      set_fact:
+        cyberark_username: "{{ keyvault_credentials['secrets']['username'] }}"
+        cyberark_password: "{{ keyvault_credentials['secrets']['password'] }}"
+
+    - name: Authenticate with CyberArk
+      cyberark.pas.auth:
+        api_base_url: "https://your-cyberark-url"
+        username: "{{ cyberark_username }}"
+        password: "{{ cyberark_password }}"
+      register: cyberark_auth_result
+
+    - name: Print CyberArk authentication result
+      debug:
+        var: cyberark_auth_result
+
+    - name: Add a Linux account to CyberArk
+      cyberark.pas.account:
+        api_base_url: "https://your-cyberark-url"
+        auth_token: "{{ cyberark_auth_result.auth_token }}"
+        safe: "LinuxSafe"
+        platform_id: "UnixSSH"
+        address: "192.168.1.100"
+        username: "linux_user"
+        secret_type: "password"
+        secret: "your_password"
+        name: "LinuxAccount"
+      register: add_account_result
+
+    - name: Print result of adding Linux account
+      debug:
+        var: add_account_result

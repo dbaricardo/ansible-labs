@@ -1,0 +1,1 @@
+az login --service-principal -u $az_clt_id -p $az_clt_secret --tenant $az_tnt

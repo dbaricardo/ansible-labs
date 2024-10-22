@@ -1,0 +1,1 @@
+ansible web01 -m ansible.builtin.yum -a "name=httpd state=present" -i inventory

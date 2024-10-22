@@ -1,0 +1,4 @@
+- name: Download Pacote JAVA
+  yum:
+    name: java
+    state: latest
